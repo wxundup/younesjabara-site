@@ -41,7 +41,7 @@ READING THE LIST — GET https://younes-ontask.woundedmc.workers.dev/ontask/api/
                                   friday, oct 25, in 3 days — the words work here too.
 - type=homework|school|event|task
 - status=open|done                 open = not done yet
-- q=whitman                        search: semantic over titles/notes/dates plus keyword,
+- q=whitman                        keyword search over titles and notes,
                                     best matches first. combine with the filters above.
 example: GET https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks?status=open&from=today&to=in%207%20days
 

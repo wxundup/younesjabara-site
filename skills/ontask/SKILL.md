@@ -64,7 +64,7 @@ Read `GET https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks` without 
 - `?from=2026-10-22&to=2026-10-28` — date range. `from`/`to` also accept the words: `today`, `tomorrow`, `friday`, `oct 25`, `in 3 days`.
 - `?type=homework|school|event|task`
 - `?status=open|done` — `open` means not done yet.
-- `?q=whitman` — semantic search over titles, notes, and dates, fused with keyword matches, best first. Combine it with the filters: `?status=open&q=quiz`.
+- `?q=whitman` — keyword search over titles and notes, best matches first. Combine it with the filters: `?status=open&q=quiz`.
 
 Example — everything open in the next week: `GET https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks?status=open&from=today&to=in 7 days` (URL-encode the spaces).
 
