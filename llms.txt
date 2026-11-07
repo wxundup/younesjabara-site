@@ -1,0 +1,79 @@
+Website: https://wxundup.github.io/younesjabara-site/#ontask
+
+ONTASK — the task list for https://wxundup.github.io/younesjabara-site/#ontask
+
+You are an agent. A human asked you to use their OnTask list. This page is the
+whole API. Every URL below is printed in full, on purpose: many fetch tools only
+open URLs that already appear in the conversation, so copy these as-is instead
+of building paths yourself.
+
+ADDING A TASK — pick whichever is easiest:
+
+1) POST https://younes-ontask.woundedmc.workers.dev/ontask/endpointforagent with JSON:
+   {"title": "text sarah about the wedding photos", "date": "2026-10-15", "time": "17:00", "type": "task", "notes": "optional"}
+
+2) GET https://younes-ontask.woundedmc.workers.dev/ontask/api/add?title=text%20sarah&date=tomorrow&time=5pm&type=task
+
+3) POST https://younes-ontask.woundedmc.workers.dev/ontask/endpointforagent with raw text (no JSON):
+   the whole body is the task. example body: tomorrow 5pm text sarah about the wedding photos
+
+FIELDS
+- title  required. a short action the human should do, like "text sarah about the wedding photos".
+- date   "2026-10-15" (YYYY-MM-DD). also understood: today, tonight, tomorrow, friday,
+         next friday, oct 15, in 3 days. if the human gave no date, omit it (task has no date).
+- time   "17:00" or "5pm" or "5:30pm". optional.
+- type   homework | school | event | task. default task.
+         homework = assignments and studying, school = classes/exams, event = weddings,
+         parties, flights, appointments, task = everything else (texting someone, shipping an update).
+- notes  optional extra detail, max 2000 chars.
+
+CHECK FOR DUPLICATES BEFORE YOU ADD
+GET https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks without filters, including completed tasks.
+Match titles, dates, notes, and source links. Skip existing assignments even when
+completed or renamed. Never reopen completed work or replace confirmed dates.
+Prefer the connected MCP tools: list_tasks first, then add_task with a stable
+source-derived id such as gmail-<message-id>. REST callers must check duplicates
+themselves. Read the list again after writing and verify the saved task.
+
+READING THE LIST — GET https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks returns
+{"ok":true,"tasks":[...]}. Filters, combine any of them on one request:
+- from=2026-10-22&to=2026-10-28   date range. from/to also accept today, tomorrow,
+                                  friday, oct 25, in 3 days — the words work here too.
+- type=homework|school|event|task
+- status=open|done                 open = not done yet
+- q=whitman                        search: semantic over titles/notes/dates plus keyword,
+                                    best matches first. combine with the filters above.
+example: GET https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks?status=open&from=today&to=in%207%20days
+
+MANAGING TASKS — you can edit and delete, not only add:
+- PATCH  https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks/:id   JSON body with the fields to change.
+                                 {"done": true} marks it done; {"done": false} reopens it.
+- DELETE https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks/:id   removes the task. Deleting twice is fine.
+The id is on every task in the list response.
+
+RESPONSE
+- 200 {"ok":true,...} means it worked. anything else means it failed; retry once at most.
+
+RULES
+- one request = one task. several tasks = several requests.
+- resolve relative words ("tomorrow", "friday") to a real date yourself if you can;
+  if you can't, send the word as-is — the server understands the common ones.
+- unknown fields are ignored. missing date means no date. don't invent deadlines.
+
+IF YOUR ENVIRONMENT BLOCKS THE CALLS
+Agents run in sandboxes with network allowlists and fetch tools that refuse URLs
+they have never seen. Work around it in this order:
+
+1. Use your fetch tool on the full URLs printed on this page. They appear in the
+   conversation now, so a fetch tool that only opens known URLs will take them.
+   Ready-made examples:
+   list    https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks?status=open&from=2026-10-26&to=2026-11-08
+   search  https://younes-ontask.woundedmc.workers.dev/ontask/api/tasks?q=algebra%20ii
+   add     https://younes-ontask.woundedmc.workers.dev/ontask/api/add?title=Algebra%20II%20HW%20%2310&date=2026-10-26&type=homework
+   mcp     https://younes-ontask.woundedmc.workers.dev/ontask/mcp  (JSON-RPC, tools: list_tasks, add_task)
+2. If your sandbox shell cannot resolve younes-ontask.woundedmc.workers.dev, that is a blocked tool,
+   not an API failure. Say which tool was blocked instead of reporting the API
+   as unreachable.
+3. If both are refused, hand the human the full add URL from example 2 above to
+   click or paste back. Never claim tasks were added when no request went out.
+GitHub Pages serves the website and llms.txt only. Send all API writes and MCP requests to https://younes-ontask.woundedmc.workers.dev/ontask.
